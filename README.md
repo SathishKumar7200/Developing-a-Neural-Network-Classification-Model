@@ -1,5 +1,8 @@
 # Developing a Neural Network Classification Model
 
+### Name: SATHISH KUMAR M
+### Register Number:212224230256
+
 ## AIM
 To develop a neural network classification model for the given dataset.
 
@@ -11,203 +14,215 @@ In their existing market, the sales team has classified all customers into 4 seg
 You are required to help the manager to predict the right group of the new customers.
 
 ## Neural Network Model
-
-<img width="710" height="841" alt="image" src="https://github.com/user-attachments/assets/30d8fc42-9f92-4d46-8542-292ad3b67afa" />
-
+Include the neural network model diagram.
 
 ## DESIGN STEPS
 ### STEP 1: 
-Data Collection and Understanding – Load the dataset, inspect features, and identify the target variable.
+Load and Preprocess the Dataset:
+
+Import the required libraries, load the dataset, handle missing values, encode categorical variables, and normalize the features.
 
 ### STEP 2: 
-Data Cleaning and Encoding – Handle missing values and convert categorical data and labels into numerical form.
+
+Split the Dataset:
+
+Divide the dataset into training and testing sets.
 
 ### STEP 3: 
-Feature Scaling and Data Splitting – Normalize features and split data into training and testing sets.
+
+Build the Neural Network:
+
+Create a Sequential model with an input layer, hidden layers using ReLU activation, and an output layer with Softmax activation for the four customer segments.
 
 ### STEP 4: 
-Model Architecture Design – Define the neural network layers, neurons, and activation functions.
 
+Train the Model:
+
+Compile the model using the Adam optimizer and categorical cross-entropy loss function, then train it using the training data.
 
 ### STEP 5: 
 
-Model Training and Optimization – Train the model using a loss function and optimizer through backpropagation.
+Evaluate and Predict:
 
-### STEP 6: 
-Model Evaluation and Prediction – Evaluate performance using metrics and make predictions on unseen data.
+Evaluate the model on the test dataset, measure its accuracy, and use it to predict the customer segment (A, B, C, or D) for new customers.
+
+
+
+
+
 
 
 ## PROGRAM
-
-### Name: SATHISH KUMAR M
-
-### Register Number: 212224230256
-
 ```
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from sklearn.preprocessing import LabelEncoder,StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+from torch.utils.data import TensorDataset,DataLoader
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from torch.utils.data import TensorDataset, DataLoader
+import matplotlib.pyplot as plt
+```
+```
+df=pd.read_csv("C:\\Users\\varal\\Downloads\\Deep Learning\\Deep Learning\\customers.csv")
+df
+```
+<img width="1046" height="376" alt="image" src="https://github.com/user-attachments/assets/707aa7ae-a8a1-4919-964e-c6112660d57b" />
 
-# Load dataset
-data = pd.read_csv('/content/customers.csv')
-data.head()
+```
+df=df.drop(columns=["ID"])
+df
+```
 
-data.columns
+<img width="991" height="372" alt="image" src="https://github.com/user-attachments/assets/cd6cb4bd-d4ae-41d0-8679-81dd35526e6d" />
 
-# Drop ID column as it's not useful for classification
-data = data.drop(columns=["ID"])
+```
+df.columns
+```
+<img width="627" height="121" alt="image" src="https://github.com/user-attachments/assets/212730a0-30ed-438d-865e-7dc31494cf3a" />
 
-# Handle missing values
-data.fillna({"Work_Experience": 0, "Family_Size": data["Family_Size"].median()}, inplace=True)
+```
+df.columns
+```
+<img width="573" height="106" alt="image" src="https://github.com/user-attachments/assets/e7f941ec-ed3b-4e25-b28d-a802af71080b" />
 
-# Encode categorical variables
-categorical_columns = ["Gender", "Ever_Married", "Graduated", "Profession", "Spending_Score", "Var_1"]
-for col in categorical_columns:
-    data[col] = LabelEncoder().fit_transform(data[col])
+```
+df.fillna({"Work_Experience":0,"Family_Size":df["Family_Size"].median()},inplace=True)
+df
+```
+<img width="1042" height="367" alt="image" src="https://github.com/user-attachments/assets/3ab2ccf2-57d1-47fc-81ae-e20b72307835" />
 
-data.head()
+```
+cat_columns=['Gender','Ever_Married', 'Graduated', 'Profession',
+    'Spending_Score', 'Var_1']
+for col in cat_columns:
+    df[col]=LabelEncoder().fit_transform(df[col])
+```
 
-# Encode target variable
-label_encoder = LabelEncoder()
-data["Segmentation"] = label_encoder.fit_transform(data["Segmentation"])  # A, B, C, D -> 0, 1, 2, 3
+```
+lbe=LabelEncoder()
+df["Segmentation"]=lbe.fit_transform(df["Segmentation"])
+df
+```
+<img width="983" height="357" alt="image" src="https://github.com/user-attachments/assets/8078285e-8222-43e3-b4d8-3f7ff3eef46c" />
 
-# Split features and target
-X = data.drop(columns=["Segmentation"])
-y = data["Segmentation"].values
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+```
+x=df.drop(columns="Segmentation")
+y=df["Segmentation"].values
+xt,xst,yt,yst=train_test_split(x,y,test_size=0.2,random_state=42)
+```
 
-# Normalize features
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+```
+scaler=StandardScaler()
+xt=scaler.fit_transform(xt)
+xst=scaler.transform(xst)
+```
 
-# Convert to tensors
-X_train = torch.tensor(X_train, dtype=torch.float32)
-X_test = torch.tensor(X_test, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.long)
-y_test = torch.tensor(y_test, dtype=torch.long)
+```
+xt=torch.FloatTensor(xt)
+xst=torch.FloatTensor(xst)
+yt=torch.FloatTensor(yt)
+yst=torch.FloatTensor(yst)
+```
 
-# Create DataLoader
-train_dataset = TensorDataset(X_train, y_train)
-test_dataset = TensorDataset(X_test, y_test)
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=16)
+```
+tr=TensorDataset(xt,yt)
+tst=TensorDataset(xst,yst)
+trl=DataLoader(tr,batch_size=16,shuffle=True)
+tstl=DataLoader(tst,batch_size=16)
+```
 
-# Define Neural Network(Model1)
-# Define Neural Network(Model1)
-class PeopleClassifier(nn.Module):
-    def __init__(self, input_size):
-        super(PeopleClassifier, self).__init__()
-        self.fc1 =nn.Linear(input_size, 32)
-        self.fc2 =nn.Linear(32, 16)
-        self.fc3 =nn.Linear(16, 8)
-        self.fc4 =nn.Linear(8,4)
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))#activation part,Rectified Linear Unit
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)
+```
+class classifier1(nn.Module):
+    def __init__(self,input_size):
+        super().__init__()
+        self.l1=nn.Linear(input_size,32)
+        self.l2=nn.Linear(32,16)
+        self.l3=nn.Linear(16,8)
+        self.l4=nn.Linear(8,4)
+    def forward(self,x):
+        x=F.relu(self.l1(x))
+        x=F.relu(self.l2(x))
+        x=F.relu(self.l3(x))
+        x=self.l4(x)
         return x
+```
 
-# Training Loop
-def train_model(model, train_loader, criterion, optimizer, epochs):
-  model.train()
-  for epoch in range(epochs):
-    for inputs,labels in train_loader:
-      optimizer.zero_grad()
-      outputs=model(inputs)
-      loss=criterion(outputs,labels)
-      loss.backward()
-      optimizer.step()
+```
+model=classifier1(input_size=xt.shape[1])
+criterion=nn.CrossEntropyLoss()
+op=optim.Adam(model.parameters(),lr=0.001)
+```
 
-    if (epoch + 1) % 10 == 0:
-        print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}')
+```
+epochs=100
+for i in range(epochs):
+    for a,b in trl:
+        op.zero_grad()
+        pred=model(a)
+        loss=criterion(pred,b.long())
+        loss.backward()
+        op.step()
+    if i%10==0:
+        print(f"Loss:{i}/{epochs}",loss.item())
+```
+<img width="285" height="208" alt="image" src="https://github.com/user-attachments/assets/cbce01a1-61a7-414b-a846-dc14e7bbf990" />
 
-# Initialize model
-model =PeopleClassifier(input_size=X_train.shape[1])
-criterion =nn.CrossEntropyLoss()
-optimizer =optim.Adam(model.parameters(),lr=0.01)
-
-train_model(model,train_loader,criterion,optimizer,epochs=100)
-
-# Evaluation
-model.eval()
-predictions, actuals = [], []
+```
+pre=[]
+act=[]
 with torch.no_grad():
-    for X_batch, y_batch in test_loader:
-        outputs = model(X_batch)
-        _, predicted = torch.max(outputs, 1)
-        predictions.extend(predicted.numpy())
-        actuals.extend(y_batch.numpy())
+    output=model(xst)
+    _,predicted=torch.max(output,1)
+    pre.extend(predicted.numpy())
+    act.extend(yst.numpy())
+    print(act,pre)
+```
+<img width="446" height="348" alt="image" src="https://github.com/user-attachments/assets/edda8fab-d2e5-4c76-b946-be3810ebfe24" />
 
-# Compute metrics
-accuracy = accuracy_score(actuals, predictions)
-conf_matrix = confusion_matrix(actuals, predictions)
-class_report = classification_report(actuals, predictions, target_names=[str(i) for i in label_encoder.classes_])
-print("Name: Sathish kumar .M")
-print("Register No: 212224230256")
-print(f'Test Accuracy: {accuracy:.2f}%')
-print("Confusion Matrix:\n", conf_matrix)
-print("Classification Report:\n", class_report)
 
+```
+accuracy=accuracy_score(act,pre)
+conf_matrix=confusion_matrix(act,pre)
+cl_report=classification_report(act,pre,target_names=['A','B','C','D'])
+print("Accuracy:",accuracy)
+print("confusion_matrix:\n",conf_matrix)
+print("classification_report:\n",cl_report)
+```
+<img width="452" height="351" alt="image" src="https://github.com/user-attachments/assets/8cab3a35-f839-4217-85a5-b0c45a205a27" />
+
+
+```
 import seaborn as sns
 import matplotlib.pyplot as plt
-sns.heatmap(conf_matrix, annot=True, cmap='Blues', xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_,fmt='g')
+xl=['A','B','C','D']
+sns.heatmap(conf_matrix, annot=True, cmap='Blues', xticklabels=xl, yticklabels=xl,fmt='g')
 plt.xlabel("Predicted Labels")
 plt.ylabel("True Labels")
 plt.title("Confusion Matrix")
 plt.show()
-
-# Prediction for a sample input
-sample_input = X_test[12].clone().unsqueeze(0).detach().type(torch.float32)
-with torch.no_grad():
-    output = model(sample_input)
-    # Select the prediction for the sample (first element)
-    predicted_class_index = torch.argmax(output[0]).item()
-    predicted_class_label = label_encoder.inverse_transform([predicted_class_index])[0]
-print("Name: Sathish kumar M")
-print("Register No: 212224230256")
-print(f'Predicted class for sample input: {predicted_class_label}')
-print(f'Actual class for sample input: {label_encoder.inverse_transform([y_test[12].item()])[0]}')
-
-
 ```
 
-### Dataset Information
+<img width="583" height="483" alt="image" src="https://github.com/user-attachments/assets/a46344ce-49ae-4934-85ee-7c6a2251c80b" />
 
-<img width="826" height="561" alt="image" src="https://github.com/user-attachments/assets/9c598340-a46d-4577-b4f0-3f9d2277a767" />
+
+
+### Dataset Information
+<img width="992" height="372" alt="image" src="https://github.com/user-attachments/assets/897e84a1-4e1b-4702-a53f-38767faf623a" />
 
 
 ### OUTPUT
 
-<img width="831" height="545" alt="image" src="https://github.com/user-attachments/assets/dd2e3cc3-856d-43dd-8c16-e6fd8c97a349" />
-
-
 ## Confusion Matrix
-
-<img width="894" height="669" alt="image" src="https://github.com/user-attachments/assets/95076201-86c8-4cf8-bdda-a68463f1916e" />
-
+<img width="583" height="483" alt="image" src="https://github.com/user-attachments/assets/a46344ce-49ae-4934-85ee-7c6a2251c80b" />
 
 ## Classification Report
-
-<img width="1341" height="808" alt="image" src="https://github.com/user-attachments/assets/567920a2-b521-4338-8a93-ad2d5138ca79" />
-
-
-### New Sample Data Prediction
-
-<img width="1687" height="465" alt="image" src="https://github.com/user-attachments/assets/1925d2a6-8ddc-4785-88ca-179e100216a8" />
-
+<img width="482" height="237" alt="image" src="https://github.com/user-attachments/assets/39c8205d-d4f2-4d52-88d4-683b2b8f0022" />
 
 
 ## RESULT
-The neural network model was trained successfully and customer segments were predicted.
+This program has been executed successfully.
